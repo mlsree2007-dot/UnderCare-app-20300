@@ -22,6 +22,8 @@ export const prisma = globalForPrisma.prisma ?? new PrismaClient({
       url: dbUrl,
     },
   },
+  // Reduce logging to speed up execution
+  log: process.env.NODE_ENV === 'production' ? ['error'] : ['query', 'info', 'warn', 'error'],
 })
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
