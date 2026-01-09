@@ -26,8 +26,7 @@ export default function LoginPage() {
             alert(res.error);
             setLoading(false);
         } else {
-            // Success
-            alert(`Logged in! (Total time: ${res.totalTime}ms)\nDB: ${res.timings.dbQuery}ms, Bcrypt: ${res.timings.bcryptCompare}ms, Session: ${res.timings.sessionSet}ms`);
+            // Success - seamless redirect
             router.push(`/dashboard/${role.toLowerCase()}`);
         }
     };
