@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   // "ADMIN", "DOCTOR", "PATIENT", "GUARDIAN"
+  createdAt DateTime @default(now())
+
+  // Relationships
+  doctorProfile DoctorProfile?
+  guardianProfile GuardianProfile?
+  patientProfile PatientProfile?  @relation("UserPatient")
+}
+
+model DoctorProfile {
+  id String @id @default(cuid())
+  userId String @unique
+  user User @relation(fields: [userId], references: [id])
+  
+  specialization String @default("General")
+  hospital String @default("Main Hospital")
+  
+  patients PatientProfile[]
+}
+
+model GuardianProfile {
+  id String @id @default(cuid())
+  userId String @unique
+  user User @relation(fields: [userId], references: [id])
+  
+  phone String
+  patients PatientProfile[]
+}
+
+model PatientProfile {
+  id String @id @default(cuid())
+  
+  // Link to a user account is optional (if they want to login)
+  userId String? @unique
+  user User? @relation("UserPatient", fields: [userId], references: [id])
+  
+  name String
+  dob DateTime
+  address String?
+  
+  // Guardian Info (Manual Entry)
+  guardianName String?
+  guardianContact String?
+  
+  // Risk & Status
+  riskLevel Int @default(0) // 0=Low, 1=Mod, 2=High
+  isReviewed Boolean @default(false)
+  
+  // Assignments
+  doctorId String?
+  doctor DoctorProfile? @relation(fields: [doctorId], references: [id])
+  
+  guardianId String?
+  guardian GuardianProfile? @relation(fields: [guardianId], references: [id])
+  
+  // Data
+  vitals VitalRecord[]
+  alerts Alert[]
+  
+  createdAt DateTime @default(now())
+}
+
+model VitalRecord {
+  id String @id @default(cuid())
+  patientId String
+  patient PatientProfile @relation(fields: [patientId], references: [id])
+  
+  systolicBP Int
+  respiratoryRate Int
+  mentalStatus String // "ALERT", "VERBAL", "PAIN", "UNRESPONSIVE"
+  
+  qSofaScore Int
+  isEmergency Boolean @default(false)
+  
+  recordedBy String?
+  recordedAt DateTime @default(now())
+}
+
+model Alert {
+  id String @id @default(cuid())
+  patientId String
+  patient PatientProfile @relation(fields: [patientId], references: [id])
+  
+  message String
+  severity String // "HIGH", "MODERATE", "LOW"
+  isResolved Boolean @default(false)
+  
+  createdAt DateTime @default(now())
+}
