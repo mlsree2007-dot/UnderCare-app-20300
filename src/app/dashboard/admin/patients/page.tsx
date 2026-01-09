@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { prisma } from '@/lib/prisma';
 import PatientRegistrationForm from '../components/PatientRegistrationForm';
 import Link from 'next/link';
