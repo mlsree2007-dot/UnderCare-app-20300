@@ -35,9 +35,13 @@ export async function login(formData: FormData) {
             role: user.role
         });
 
-    } catch (e) {
-        console.error("Login Error", e);
-        return { error: 'Something went wrong.' };
+    } catch (e: any) {
+        console.error("Login Error Debug:", e);
+        // Specifically check for environment variable errors
+        if (e.message?.includes('DATABASE_URL')) {
+            return { error: 'Database connection failed. Is DATABASE_URL set in Netlify?' };
+        }
+        return { error: `Debug Error: ${e.message || 'Unknown error'}` };
     }
 
     // Redirect must happen outside try/catch in Server Actions usually, 
