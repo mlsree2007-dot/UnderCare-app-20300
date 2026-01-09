@@ -3,8 +3,6 @@
   publish = ".next"
 
 [functions]
-  node_wrapper = "esbuild"
-  # This ensures the prisma directory (and dev.db) is included in the function bundle
   included_files = ["prisma/**"]
 
 [[plugins]]
