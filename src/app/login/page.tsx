@@ -23,10 +23,11 @@ export default function LoginPage() {
         const res = await login(formData);
 
         if (res?.error) {
-            alert(res.error); // Simple alert for demo
+            alert(res.error);
             setLoading(false);
         } else {
-            // Redirect
+            // Success
+            alert(`Logged in! (Total time: ${res.totalTime}ms)\nDB: ${res.timings.dbQuery}ms, Bcrypt: ${res.timings.bcryptCompare}ms, Session: ${res.timings.sessionSet}ms`);
             router.push(`/dashboard/${role.toLowerCase()}`);
         }
     };

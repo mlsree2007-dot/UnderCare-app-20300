@@ -10,23 +10,29 @@ export async function login(formData: FormData) {
     const password = formData.get('password') as string;
     const expectedRole = formData.get('role') as string; // Optional: enforce role check if needed
 
+    const start = Date.now();
+    const timings: any = {};
+
     try {
+        const dbStart = Date.now();
         const user = await prisma.user.findUnique({
             where: { email }
         });
+        timings.dbQuery = Date.now() - dbStart;
 
-        if (!user || !(await bcrypt.compare(password, user.password))) {
+        if (!user) {
             return { error: 'Invalid email or password.' };
         }
 
-        // Optional: Check if user matches the portal they are trying to access?
-        // For simplicity, we just log them in and let the dashboard redirect handle access control if needed, 
-        // OR strict checking here:
-        if (expectedRole && user.role !== expectedRole) {
-            // Allow flexible login, but maybe warn? Or strict:
-            // return { error: `This account is registered as ${user.role}, not ${expectedRole}.` };
+        const bcryptStart = Date.now();
+        const isMatch = await bcrypt.compare(password, user.password);
+        timings.bcryptCompare = Date.now() - bcryptStart;
+
+        if (!isMatch) {
+            return { error: 'Invalid email or password.' };
         }
 
+        const sessionStart = Date.now();
         // Create Session
         await setSession({
             id: user.id,
@@ -34,16 +40,17 @@ export async function login(formData: FormData) {
             name: user.name,
             role: user.role
         });
+        timings.sessionSet = Date.now() - sessionStart;
 
     } catch (e: any) {
         console.error("Login Error:", e);
-        return { error: 'Authentication failed. Please check your credentials.' };
+        return { error: `Auth Error: ${e.message || 'Unknown'}` };
     }
 
-    // Redirect must happen outside try/catch in Server Actions usually, 
-    // but here we might want to return success and let client redirect, 
-    // OR redirect here.
-    return { success: true };
+    const totalTime = Date.now() - start;
+    console.log(`Login Performance: Total ${totalTime}ms`, timings);
+
+    return { success: true, timings, totalTime };
 }
 
 export async function logout() {
