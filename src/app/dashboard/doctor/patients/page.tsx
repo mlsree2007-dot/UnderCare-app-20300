@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { prisma } from '@/lib/prisma';
 import ClientPatientList from '../components/ClientPatientList'; // Correct relative import
 import { HeartPulse } from 'lucide-react';
